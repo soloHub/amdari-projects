@@ -1,56 +1,26 @@
+# Copyright Broadcom, Inc. All Rights Reserved.
+
 services:
-
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    container_name: zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "2181:2181"
-
-  kafka:
-    image: confluentinc/cp-kafka:latest
-    container_name: kafka
-    depends_on:
-      - zookeeper
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-    volumes:
-      - ./app/kafka:/opt/bitnami/kafka
-    ports:
-      - "9092:9092"
-
-  spark-master:
-    build: .
-    container_name: spark-master
+  spark:
+    image: docker.io/bitnami/spark:3.5
     environment:
       - SPARK_MODE=master
-      - SPARK_MASTER_PORT=7077
-    volumes:
-     - ./app/spark:/opt/bitnami/spark/
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_USER=spark
     ports:
-      - "7077:7077"
-      - "8080:8080" # Web UI
-
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
-    volumes:
-     - ./app/mongodb-data:/data/db/
-    ports:
-      - "27017:27017"
-    env_file: #enivornment file with required creditentials
-      - .env
+      - '8080:8080'
+  spark-worker:
+    image: docker.io/bitnami/spark:3.5
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_PASSWORD}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_KAFKA_USERNAME: ${MONGO_KAFKA_USERNAME}
-      MONGO_KAFKA_PASSWORD: ${MONGO_KAFKA_PASSWORD}
-
-networks:
-  default:
-    name: kafka_spark_mongo_network
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark:7077
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_USER=spark
