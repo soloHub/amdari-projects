@@ -1,0 +1,4 @@
+./TestDockerEnv
+./Stream-Capture-Data-with-Kafka-Spark-Mongo/.env
+./Stream-Capture-Data-with-Kafka-Spark-Mongo/mongo-spark-connector_2.12-10.4.0.jar
+./Stream-Capture-Data-with-Kafka-Spark-Mongo/spark-sql-kafka-0-10_2.13-3.5.3.jar

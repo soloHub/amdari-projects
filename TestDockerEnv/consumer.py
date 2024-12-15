@@ -15,7 +15,6 @@ topic = "reddit"
 
 spark = SparkSession.builder \
         .appName("RedditKafkaToMongo") \
-        .config("spark.sql.sources.enabledProtocols", "kafka") \
         .config("spark.mongodb.output.uri", uri) \
         .config("spark.mongodb.output.database", database) \
         .config("spark.mongodb.output.collection", collection)\

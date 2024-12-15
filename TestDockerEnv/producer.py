@@ -30,6 +30,4 @@ producer = KafkaProducer(
 subreddit = reddit.subreddit("politics")
 
 for comment in subreddit.stream.comments():
-    print("="*50)
-    print(comment.body)
     producer.send("reddit", value={'comment': comment.body})
