@@ -1,7 +1,0 @@
-FROM bitnami/spark:3.5.3
-
-RUN apt-get update && \
-    wget https://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.13/3.5.3/spark-sql-kafka-0-10_2.13-3.5.3.jar && \
-    cp spark-sql-kafka-0-10_2.12-3.5.3.jar /opt/bitnami/spark/lib/ && \
-    wget https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_2.12/10.4.0/mongo-spark-connector_2.12-10.4.0.jar && \
-    cp mongo-spark-connector_2.12-10.4.0.jar /opt/bitnami/spark/lib/

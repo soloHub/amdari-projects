@@ -1,0 +1,15 @@
+certifi==2024.8.30
+charset-normalizer==3.4.0
+kafka-python==2.0.2
+idna==3.10
+praw==7.8.1
+prawcore==2.4.0
+py4j==0.10.9.7
+python-dotenv==1.0.1
+pymongo==4.10.1
+pyspark==3.5.3
+requests==2.32.3
+six==1.16.0
+update-checker==0.18.0
+urllib3==2.2.3
+websocket-client==1.8.0

@@ -1,20 +1,20 @@
 # Docker Compose File for Kafka, Spark, & Mongodb
-version:  '2'
 
 services:
   kafka:
     image: docker.io/bitnami/kafka:3.9
+    container_name: kafka
     ports:
       - "9092:9092"
     volumes:
-      - "./kafka:/opt/kafka"
+      - "./kafka:/bitnami/kafka"
     environment:
       # KRaft settings
       - KAFKA_CFG_NODE_ID=0
       - KAFKA_CFG_PROCESS_ROLES=controller,broker
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9094
       # Listeners
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9094
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://:9092
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
@@ -22,8 +22,24 @@ services:
     networks:
       - kafka-network
 
+   # Kafka UI
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      - kafka
+    networks:
+      - kafka-network
+
   spark:
     image: docker.io/bitnami/spark:3.5
+    container_name: spark
+    build: .
     environment:
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
@@ -32,14 +48,16 @@ services:
       - SPARK_SSL_ENABLED=no
       - SPARK_USER=spark
     ports:
-      - '8080:8080'
+      - '8082:8082'
+      - '4040:4040'
     volumes:
-      - "./spark:/opt/spark"
+      - "./spark/jars:/opt/jars"
     networks:
       - kafka-network
   
   spark-worker:
     image: docker.io/bitnami/spark:3.5
+    container_name: spark-worker
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark:7077
@@ -55,6 +73,7 @@ services:
 
   mongo:
     image: mongo:8.0.4
+    container_name: mongo
     restart: always
     env_file: #enivornment file with required creditentials
       - .env
@@ -68,6 +87,7 @@ services:
 
   mongo-express:
     image: mongo-express:1.0.2
+    container_name: mongo-express
     restart: always
     ports:
       - 8081:8081
@@ -80,6 +100,35 @@ services:
       ME_CONFIG_BASICAUTH: false
     networks:
       - kafka-network
+
+  python-producer:
+    container_name: python-producer
+    build: ./py-producer/
+    volumes:
+      - "./py-producer:/app"
+    depends_on:
+      - kafka
+      - kafka-ui
+    networks:
+      - kafka-network   
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092  # Adjust if needed
+    command: python producer.py
+
+  python-consumer:
+    container_name: python-consumer
+    build: ./py-consumer/
+    volumes:
+      - "./py-consumer:/app"
+    depends_on:
+      - kafka
+      - kafka-ui
+      - python-producer
+    networks:
+      - kafka-network   
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092  # Adjust if needed
+    command: python consumer.py
 
 volumes:
   kafka:
